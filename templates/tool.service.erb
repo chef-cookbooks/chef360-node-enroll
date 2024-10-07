@@ -1,0 +1,13 @@
+[Unit]
+Description=<%= @tool_name %>
+
+[Service]
+Type=simple
+ExecStart=<%= @exec_start %>
+Environment="HOME=/<%= ENV['USER'] %>"
+ExecStop=/bin/kill -s SIGTERM $MAINPID
+KillMode=process
+LimitNOFILE=65535
+
+[Install]
+WantedBy=default.target

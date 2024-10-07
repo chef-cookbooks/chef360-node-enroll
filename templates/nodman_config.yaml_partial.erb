@@ -1,0 +1,15 @@
+api:
+  tenant_fqdns: "<%= @platform_url %>:<%= @api_port %>"
+  enable_platform_auth: true
+  timeout_ms: 5000
+logger:
+  level: "error"
+  file_name: "agent.log"
+  log_dir: "<%= @log_dir %>"
+agent:
+  node_role_link_id: "<%= @node_role_link_id %>"
+  node_id: "<%= @node_id %>"
+  platform_credentials_path: "<%= @platform_credentials_path %>"
+  node_checkin_interval_sec: 10
+  update_skill_metadata_interval_sec: 300
+  data_dir: "<%=@data_dir %>"

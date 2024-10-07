@@ -1,0 +1,34 @@
+log:
+  dir: "<%= @log_dir %>"
+  format: "json"
+  level: "debug"
+  output: "file"
+node_id: "<%= @node_id %>"
+queue:
+  address: "amqp://rmqcourier:rmqreadonly@<%= @chef_platform_url %>:31050//"
+  channel: "<%= @node_id %>"
+  provider: 0
+reporter:
+  name: "server"
+  authenticationType: "basic"
+  dir: "<%= @data_dir %>"
+  intervalInSec: "5"
+  retryIntervalInSec: "4"
+  totalRetryDurationInMin: "2"
+db: "<%= @data_dir %>"
+credentials:
+  api_key: ""
+  api_secret: ""
+gateway_config:
+  tenantfqdns: "<%= @chef_platform_url %>:<%= @api_port %>"
+  node_role_link_id: "<%= @node_role_link_id %>"
+  platform_credential_path: "<%= @platform_credential_path %>"
+interpreters:
+  - name: "chef-platform/shell-interpreter"
+    path: "<%= @chef_tools_dir_path %>/shell-interpreter/shell-interpreter"
+  - name: "chef-platform/restart-interpreter"
+    path: "<%= @chef_tools_dir_path %>/restart-interpreter/restart-interpreter"
+  - name: "chef-platform/chef-client-interpreter"
+    path: "<%= @chef_tools_dir_path %>/chef-client-interpreter/chef-client-interpreter"
+  - name: "chef-platform/inspec-interpreter"
+    path: "<%= @chef_tools_dir_path %>/inspec-interpreter/inspec-interpreter"
