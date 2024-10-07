@@ -1,4 +1,4 @@
-# Chef InSpec test for recipe chef-cookbook-enroll::install_config_hab_nodeman_windows
+# Chef InSpec test for recipe chef360-node-enroll::install_config_hab_nodeman_windows
 
 # The Chef InSpec reference, with examples and extensive documentation, can be
 # found at https://docs.chef.io/inspec/resources/

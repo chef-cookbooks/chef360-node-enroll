@@ -1,5 +1,5 @@
 #
-# Cookbook:: chef-cookbook-enroll
+# Cookbook:: chef360-node-enroll
 # Recipe:: default
 #
 # Copyright:: 2024, The Authors, All Rights Reserved.

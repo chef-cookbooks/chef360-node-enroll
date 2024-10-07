@@ -1,12 +1,12 @@
 #
-# Cookbook:: chef-cookbook-enroll
+# Cookbook:: chef360-node-enroll
 # Spec:: install_config_hab_nodeman_windows
 #
 # Copyright:: 2024, The Authors, All Rights Reserved.
 
 require 'spec_helper'
 
-describe 'chef-cookbook-enroll::install_config_hab_nodeman_windows' do
+describe 'chef360-node-enroll::install_config_hab_nodeman_windows' do
   context 'When all attributes are default, on Ubuntu 20.04' do
     # for a complete list of available platforms and versions see:
     # https://github.com/chefspec/fauxhai/blob/main/PLATFORMS.md

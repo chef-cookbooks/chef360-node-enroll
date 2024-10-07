@@ -4,13 +4,13 @@
 # https://docs.chef.io/policyfile/
 
 # A name that describes what the system you're building with Chef does.
-name 'chef-cookbook-enroll'
+name 'chef360-node-enroll'
 
 # Where to find external cookbooks:
 default_source :supermarket
 
 # run_list: chef-client will run these recipes in the order specified.
-run_list 'chef-cookbook-enroll::default'
+run_list 'chef360-node-enroll::default'
 
 # Specify a custom source for a single cookbook:
-cookbook 'chef-cookbook-enroll', path: '.'
+cookbook 'chef360-node-enroll', path: '.'

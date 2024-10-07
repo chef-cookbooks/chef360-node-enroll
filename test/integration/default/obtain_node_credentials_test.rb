@@ -1,4 +1,4 @@
-# Chef InSpec test for recipe chef-cookbook-enroll::obtain_node_credentials
+# Chef InSpec test for recipe chef360-node-enroll::obtain_node_credentials
 
 # The Chef InSpec reference, with examples and extensive documentation, can be
 # found at https://docs.chef.io/inspec/resources/

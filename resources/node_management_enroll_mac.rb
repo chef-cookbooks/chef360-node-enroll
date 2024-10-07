@@ -1,7 +1,7 @@
 # To learn more about Custom Resources, see https://docs.chef.io/custom_resources.html
 #
 # Author:: Varun Sharma
-# Cookbook:: chef-cookbook-enroll
+# Cookbook:: chef360-node-enroll
 # Resource:: node_management_enroll
 #
 # Copyright:: 2024, Progress Software

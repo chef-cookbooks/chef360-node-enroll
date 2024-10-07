@@ -1,6 +1,6 @@
-# chef-cookbook-enroll CHANGELOG
+# chef360-node-enroll CHANGELOG
 
-This file is used to list changes made in each version of the chef-cookbook-enroll cookbook.
+This file is used to list changes made in each version of the chef360-node-enroll cookbook.
 
 ## 1.0.0
 

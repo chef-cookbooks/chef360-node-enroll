@@ -4,7 +4,7 @@ default['enroll']['interpreters'] = %w(shell-interpreter inspec-interpreter rest
 default['enroll']['nodeman_pkg'] = 'node-management-agent'
 default['enroll']['runner_pkg'] = 'courier-runner'
 default['enroll']['gohai_pkg'] = 'chef-gohai'
-default['enroll']['cookbook_name'] = 'chef-cookbook-enroll'
+default['enroll']['cookbook_name'] = 'chef360-node-enroll'
 
 default['enroll']['node_guid_file'] = if platform?('windows')
                                         "c:\\hab\\svc\\#{node['enroll']['nodeman_pkg']}\\data\\node_guid"
