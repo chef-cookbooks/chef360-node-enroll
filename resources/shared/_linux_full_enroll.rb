@@ -41,6 +41,7 @@ action_class do
 
     remote_file "#{new_resource.working_dir_path}/#{hab_package_tgz}" do
       source "#{new_resource.chef_platform_url}:#{new_resource.api_port}/node/enrollment/v1/static/habdownload/#{hab_package_tgz}"
+      ssl_verify_mode new_resource.ssl_verify_mode
       action :create
     end
 

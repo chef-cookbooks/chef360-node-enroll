@@ -8,6 +8,8 @@ property :hab_builder_url, String, default: 'https://bldr.habitat.sh'
 property :working_dir_path, String, default: '/tmp'
 property :chef_tools_dir_path, String, default: '/etc/chef_platform/tools'
 property :upgrade_skills, [true, false], default: false
+property :root_ca, String, sensitive: true
+property :ssl_verify_mode, Symbol, equal_to: [:verify_peer, :verify_none], default: :verify_none
 
 action_class do
   include NodeManagementHelpers::Credentials
@@ -30,10 +32,11 @@ action_class do
       node.default['enroll']['node_id'] = node_uuid
     else
       Chef::Log.info('Node is not enrolled, enrolling...')
-      node_id, node_role_link_id, node_private_cert = obtain_node_credentials
+      node_id, node_role_link_id, node_private_cert, node_public_cert = obtain_node_credentials(new_resource.ssl_verify_mode)
       node.default['enroll']['node_id'] = node_id
       node.default['enroll']['node_role_link_id'] = node_role_link_id
       node.default['enroll']['node_private_cert'] = node_private_cert
+      node.default['enroll']['node_public_cert'] = node_public_cert
     end
   end
 
@@ -43,6 +46,7 @@ action_class do
     log_dir_loc = ''
     config_file = ''
     data_dir_loc = ''
+    
     if platform?('windows')
       config_dir_loc = "#{new_resource.chef_tools_dir_path}\\#{tool_name}\\config"
       log_dir_loc = "#{new_resource.chef_tools_dir_path}\\#{tool_name}\\logs"
@@ -87,8 +91,11 @@ action_class do
     local_log_dir_loc = @log_dir_loc
     local_user_toml = @user_toml
     local_agent_key_path = @agent_key
+    local_ca_cert_path = @ca_cert
     local_node_guid = @node_guid
     local_nodman_config = @nodman_config
+
+    is_secure = node['enroll']['chef_platform_url'].start_with?('https')
 
     config_template_source = new_resource.enroll_type == 'partial' ? 'nodman_config.yaml_partial.erb' : 'nodman_config.yaml_full.erb'
 
@@ -99,6 +106,15 @@ action_class do
       end
     end
 
+    if is_secure
+      file "#{local_ca_cert_path}" do
+        content  new_resource.root_ca
+        action :create
+      end
+    else
+      local_ca_cert_path = ""
+    end
+
     template "#{local_user_toml}" do
       cookbook node['enroll']['cookbook_name']
       source 'user.toml.erb'
@@ -106,7 +122,10 @@ action_class do
         platform_url: new_resource.chef_platform_url,
         node_id: node['enroll']['node_id'],
         node_role_link_id: node['enroll']['node_role_link_id'],
-        api_port: new_resource.api_port
+        api_port: new_resource.api_port,
+        platform_credentials_path: local_agent_key_path,
+        insecure: !is_secure,
+        ca_cert_path: local_ca_cert_path,
       )
       action :create
     end
@@ -133,7 +152,9 @@ action_class do
           api_port: new_resource.api_port,
           data_dir: local_data_dir_loc,
           log_dir: local_log_dir_loc,
-          platform_credentials_path: "#{local_agent_key_path}"
+          platform_credentials_path: "#{local_agent_key_path}",
+          insecure: !is_secure,
+          ca_cert_path: local_ca_cert_path,
         )
         owner 'root'
         group 'wheel'
@@ -152,7 +173,8 @@ action_class do
           api_port: new_resource.api_port,
           data_dir: local_data_dir_loc,
           log_dir: local_log_dir_loc,
-          platform_credentials_path: "#{local_agent_key_path}"
+          platform_credentials_path: "#{local_agent_key_path}",
+          # ca_cert_path: "#{local_ca_cert_path}"
         )
         action :create
       end
@@ -176,6 +198,7 @@ action_class do
       @log_dir_loc = "#{base_dir}\\logs"
       @user_toml = "#{@config_dir_loc}\\user.toml"
       @agent_key = "#{@data_dir_loc}\\node-management-agent-key.pem"
+      @ca_cert = "#{@data_dir_loc}\\ca-cert.pem"
       @node_guid = "#{@data_dir_loc}\\node_guid"
       @nodman_config = "#{@config_dir_loc}\\config.yaml"
     else
@@ -194,6 +217,7 @@ action_class do
       @log_dir_loc = "#{base_dir}/logs"
       @user_toml = "#{@config_dir_loc}/user.toml"
       @agent_key = "#{@data_dir_loc}/node-management-agent-key.pem"
+      @ca_cert = "#{@data_dir_loc}/ca-cert.pem"
       @node_guid = "#{@data_dir_loc}/node_guid"
       @nodman_config = "#{@config_dir_loc}/config.yaml"
     end

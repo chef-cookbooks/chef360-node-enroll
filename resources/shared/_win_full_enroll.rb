@@ -13,6 +13,7 @@ action_class do
     # Download the Habitat ZIP file
     remote_file "#{working_dir_path}\\hab.zip" do
       source "#{chef_platform_url}:#{api_port}/node/enrollment/v1/static/habdownload/hab-download-windows.zip"
+      ssl_verify_mode new_resource.ssl_verify_mode
       action :create
     end
 

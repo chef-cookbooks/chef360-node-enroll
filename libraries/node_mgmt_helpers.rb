@@ -12,7 +12,7 @@
 
 module NodeManagementHelpers
   module Credentials
-    def obtain_node_credentials
+    def obtain_node_credentials(ssl_mode)
       chef_platform_url = new_resource.chef_platform_url
       cohort_id = new_resource.cohort_id
       access_key = new_resource.access_key
@@ -22,18 +22,18 @@ module NodeManagementHelpers
       # 1. Generate a random UUID
       node_id = SecureRandom.uuid
 
-      access_token, _refresh_token = HTTPHelper.get_new_access_token(access_key, secret_key, chef_platform_url, api_port)
+      access_token, _refresh_token = HTTPHelper.get_new_access_token(access_key, secret_key, chef_platform_url, api_port, ssl_mode)
 
       # 2. Create a node with the ID
       url = "#{chef_platform_url}:#{api_port}/node/management/v1/nodes"
       payload = { 'id' => node_id, 'cohortId' => cohort_id, 'source' => 'enrollment' }
-      response = HTTPHelper.http_request(url, payload, 'post', access_token)
+      response = HTTPHelper.http_request(url, payload, 'post', access_token, ssl_mode)
       reg_node_id = response['item']['nodeId']
 
       # 3. Register the Node with Auth system
       url = "#{chef_platform_url}:#{api_port}/platform/node-accounts/v1/node"
       payload = { 'nodeRefId' => reg_node_id }
-      response = HTTPHelper.http_request(url, payload, 'post', access_token)
+      response = HTTPHelper.http_request(url, payload, 'post', access_token, ssl_mode)
       node_auth_id = response['item']['id']
       # node_ref_id = response['item']['nodeRefId']
 
@@ -44,15 +44,15 @@ module NodeManagementHelpers
       # 4. Assign the Node the Node Management Role
       url = "#{chef_platform_url}:#{api_port}/platform/node-accounts/v1/node/#{node_auth_id}/role"
       payload = { 'name' => 'node-management-agent', 'roleId' => node_role_id }
-      _response = HTTPHelper.http_request(url, payload, 'post', access_token)
+      response = HTTPHelper.http_request(url, payload, 'post', access_token, ssl_mode)
       # node_security_role_id = response['item']['id']
 
       # 5. Force new credential rotation on the Node
       url = "#{chef_platform_url}:#{api_port}/platform/node-accounts/v1/node/#{node_auth_id}/role/#{node_role_id}/credentials/rotate"
       payload = { 'nodeRefId' => reg_node_id }
-      response = HTTPHelper.http_request(url, payload, 'put', access_token)
+      response = HTTPHelper.http_request(url, payload, 'put', access_token, ssl_mode)
 
-      [node_id, response['item']['nodeRoleLinkId'], response['item']['privateCert']]
+      [node_id, response['item']['nodeRoleLinkId'], response['item']['privateCert'], response['item']['publicCert']]
     end
   end
 end

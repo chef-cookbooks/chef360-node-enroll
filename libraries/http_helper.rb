@@ -5,13 +5,17 @@ module HTTPHelper
   class << self
     # Function to get a new access token using a refresh token
     # Helper function to create a new access token from provided access_key and secret_key
-    def get_new_access_token(access_key, secret_key, chef_platform_url, api_port)
+    def get_new_access_token(access_key, secret_key, chef_platform_url, api_port, ssl_mode)
       url = "#{chef_platform_url}:#{api_port}/platform/user-accounts/v1/user/api-token/login"
       payload = { 'accessKey' => access_key, 'secretKey' => secret_key, 'state' => 'random-string' }
       uri = URI.parse(url)
       header = { 'Content-Type': 'application/json' }
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = (uri.scheme == 'https')
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      if ssl_mode == 'verify_peer'
+        http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+      end
       request = Net::HTTP::Post.new(uri.request_uri, header)
       request.body = payload.to_json
       response = http.request(request)
@@ -25,6 +29,10 @@ module HTTPHelper
       header = { 'Content-Type': 'application/json' }
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = (uri.scheme == 'https')
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      if ssl_mode == 'verify_peer'
+        http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+      end
       request = Net::HTTP::Post.new(uri.request_uri, header)
       request.body = payload.to_json
       response = http.request(request)
@@ -36,10 +44,14 @@ module HTTPHelper
     end
 
     # def http_request(url, payload, http_method, access_token = nil, refresh_token = nil, chef_platform_url = nil)
-    def http_request(url, payload, http_method, access_token = nil)
+    def http_request(url, payload, http_method, access_token = nil, ssl_mode)
       uri = URI.parse(url)
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = (uri.scheme == 'https')
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      if ssl_mode == 'verify_peer'
+        http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+      end
       request = if http_method == 'put'
                   Net::HTTP::Put.new(uri.request_uri)
                 else

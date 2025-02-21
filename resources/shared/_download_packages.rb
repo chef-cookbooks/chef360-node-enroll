@@ -57,6 +57,7 @@ action_class do
 
     remote_file tool_pkg_file_path do
       source "#{new_resource.chef_platform_url}:#{new_resource.api_port}/platform/bundledtools/v1/static/downloads/#{tool}/#{tool_file_name}"
+      ssl_verify_mode new_resource.ssl_verify_mode
       action :create
     end
   end
@@ -68,6 +69,7 @@ action_class do
     end
     remote_file latest_version_file_path do
       source "#{new_resource.chef_platform_url}:#{new_resource.api_port}/platform/bundledtools/v1/static/downloads/#{tool}/latest"
+      ssl_verify_mode new_resource.ssl_verify_mode
       action :create
     end
 

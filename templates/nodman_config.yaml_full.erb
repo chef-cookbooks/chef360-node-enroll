@@ -13,6 +13,8 @@ agent:
   skill_scan_interval_sec: 10
   update_metadata_interval_sec: 300
   data_dir: "<%=@data_dir %>"
+  insecure: <%=@insecure%>
+  root_ca_path: "<%=@ca_cert_path%>"
 bldr:
   url: "<%= @hab_builder_url %>"
   auth_token: ""

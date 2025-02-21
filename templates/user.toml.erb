@@ -1,11 +1,21 @@
 [api]
 tenant_fqdns = "<%= @platform_url %>:<%= @api_port %>"
-
+enable_platform_auth = true
+timeout_ms = 10000
+[logger]
+level = "debug"
+log_dir = "/hab/svc/node-management-agent/data/logs"
+file_name = "agent.log"
 [agent]
 node_id = "<%= @node_id %>"
 node_role_link_id = "<%= @node_role_link_id %>"
-
+platform_credentials_path = "<%= @platform_credentials_path %>"
+node_checkin_interval_sec = 3600
+update_skill_metadata_interval_sec = 3600
+data_dir = "/hab/svc/node-management-agent/data"
+insecure = <%=@insecure%>
+root_ca_path = "<%=@ca_cert_path%>"
 [bldr]
+url = "https://bldr.habitat.sh"
+auth_token = ""
 channel = "stable"
-
-[platform]
