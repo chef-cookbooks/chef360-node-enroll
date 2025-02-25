@@ -48,10 +48,10 @@ action_class do
     data_dir_loc = ''
     
     if platform?('windows')
-      config_dir_loc = "#{new_resource.chef_tools_dir_path}\\#{tool_name}\\config"
-      log_dir_loc = "#{new_resource.chef_tools_dir_path}\\#{tool_name}\\logs"
-      data_dir_loc = "#{new_resource.chef_tools_dir_path}\\#{tool_name}\\data"
-      config_file = "#{config_dir_loc}\\#{config_file_name}"
+      config_dir_loc = "#{new_resource.chef_tools_dir_path}/#{tool_name}/config"
+      log_dir_loc = "#{new_resource.chef_tools_dir_path}/#{tool_name}/logs"
+      data_dir_loc = "#{new_resource.chef_tools_dir_path}/#{tool_name}/data"
+      config_file = "#{config_dir_loc}/#{config_file_name}"
     else
       config_dir_loc = "#{new_resource.chef_tools_dir_path}/#{tool_name}/config"
       log_dir_loc = "#{new_resource.chef_tools_dir_path}/#{tool_name}/logs"
@@ -95,7 +95,7 @@ action_class do
     local_node_guid = @node_guid
     local_nodman_config = @nodman_config
 
-    is_secure = node['enroll']['chef_platform_url'].start_with?('https')
+    is_secure = new_resource.chef_platform_url.start_with?('https')
 
     config_template_source = new_resource.enroll_type == 'partial' ? 'nodman_config.yaml_partial.erb' : 'nodman_config.yaml_full.erb'
 
@@ -115,21 +115,6 @@ action_class do
       local_ca_cert_path = ""
     end
 
-    template "#{local_user_toml}" do
-      cookbook node['enroll']['cookbook_name']
-      source 'user.toml.erb'
-      variables(
-        platform_url: new_resource.chef_platform_url,
-        node_id: node['enroll']['node_id'],
-        node_role_link_id: node['enroll']['node_role_link_id'],
-        api_port: new_resource.api_port,
-        platform_credentials_path: local_agent_key_path,
-        insecure: !is_secure,
-        ca_cert_path: local_ca_cert_path,
-      )
-      action :create
-    end
-
     file "#{local_agent_key_path}" do
       content node['enroll']['node_private_cert']
       action :create
@@ -140,67 +125,85 @@ action_class do
       action :create
     end
 
-    if platform?('mac_os_x')
-      template "#{local_nodman_config}" do
-        cookbook node['enroll']['cookbook_name']
-        source config_template_source
-        variables(
-          platform_url: new_resource.chef_platform_url,
-          node_id: node['enroll']['node_id'],
-          node_role_link_id: node['enroll']['node_role_link_id'],
-          hab_builder_url: new_resource.hab_builder_url,
-          api_port: new_resource.api_port,
-          data_dir: local_data_dir_loc,
-          log_dir: local_log_dir_loc,
-          platform_credentials_path: "#{local_agent_key_path}",
-          insecure: !is_secure,
-          ca_cert_path: local_ca_cert_path,
-        )
-        owner 'root'
-        group 'wheel'
-        mode '0644'
-        action :create
-      end
-    else
-      template "#{local_nodman_config}" do
-        cookbook node['enroll']['cookbook_name']
-        source config_template_source
-        variables(
-          platform_url: new_resource.chef_platform_url,
-          node_id: node['enroll']['node_id'],
-          node_role_link_id: node['enroll']['node_role_link_id'],
-          hab_builder_url: new_resource.hab_builder_url,
-          api_port: new_resource.api_port,
-          data_dir: local_data_dir_loc,
-          log_dir: local_log_dir_loc,
-          platform_credentials_path: "#{local_agent_key_path}",
-          # ca_cert_path: "#{local_ca_cert_path}"
-        )
-        action :create
-      end
+    template "#{local_user_toml}" do
+      cookbook node['enroll']['cookbook_name']
+      source 'user.toml.erb'
+      variables(
+        platform_url: new_resource.chef_platform_url,
+        node_id: node['enroll']['node_id'],
+        log_dir: local_log_dir_loc,
+        data_dir: local_data_dir_loc,
+        node_role_link_id: node['enroll']['node_role_link_id'],
+        api_port: new_resource.api_port,
+        platform_credentials_path: local_agent_key_path,
+        insecure: !is_secure,
+        ca_cert_path: local_ca_cert_path,
+      )
+      action :create
     end
+
+    # if platform?('mac_os_x')
+    #   template "#{local_nodman_config}" do
+    #     cookbook node['enroll']['cookbook_name']
+    #     source config_template_source
+    #     variables(
+    #       platform_url: new_resource.chef_platform_url,
+    #       node_id: node['enroll']['node_id'],
+    #       node_role_link_id: node['enroll']['node_role_link_id'],
+    #       hab_builder_url: new_resource.hab_builder_url,
+    #       api_port: new_resource.api_port,
+    #       data_dir: local_data_dir_loc,
+    #       log_dir: local_log_dir_loc,
+    #       platform_credentials_path: "#{local_agent_key_path}",
+    #       insecure: !is_secure,
+    #       ca_cert_path: local_ca_cert_path,
+    #     )
+    #     owner 'root'
+    #     group 'wheel'
+    #     mode '0644'
+    #     action :create
+    #   end
+    # else
+    #   template "#{local_nodman_config}" do
+    #     cookbook node['enroll']['cookbook_name']
+    #     source config_template_source
+    #     variables(
+    #       platform_url: new_resource.chef_platform_url,
+    #       node_id: node['enroll']['node_id'],
+    #       node_role_link_id: node['enroll']['node_role_link_id'],
+    #       hab_builder_url: new_resource.hab_builder_url,
+    #       api_port: new_resource.api_port,
+    #       data_dir: local_data_dir_loc,
+    #       log_dir: local_log_dir_loc,
+    #       platform_credentials_path: "#{local_agent_key_path}",
+    #       insecure: !is_secure,
+    #       ca_cert_path: local_ca_cert_path,
+    #     )
+    #     action :create
+    #   end
+    # end
   end
 
   def define_node_mgmt_config_dirs
     if platform?('windows')
       base_dir = if new_resource.enroll_type == 'partial'
-                   "#{new_resource.chef_tools_dir_path}\\#{node['enroll']['nodeman_pkg']}"
+                   "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}"
                  else
-                   "c:\\hab\\svc\\#{node['enroll']['nodeman_pkg']}"
+                   "c:/hab/svc/#{node['enroll']['nodeman_pkg']}"
                  end
       @config_dir_loc = if new_resource.enroll_type == 'partial'
-                          "#{new_resource.chef_tools_dir_path}\\#{node['enroll']['nodeman_pkg']}/config"
+                          "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}/config"
                         else
-                          "c:\\hab\\user\\#{node['enroll']['nodeman_pkg']}\\config"
+                          "c:/hab/user/#{node['enroll']['nodeman_pkg']}/config"
                         end
 
-      @data_dir_loc = "#{base_dir}\\data"
-      @log_dir_loc = "#{base_dir}\\logs"
-      @user_toml = "#{@config_dir_loc}\\user.toml"
-      @agent_key = "#{@data_dir_loc}\\node-management-agent-key.pem"
-      @ca_cert = "#{@data_dir_loc}\\ca-cert.pem"
-      @node_guid = "#{@data_dir_loc}\\node_guid"
-      @nodman_config = "#{@config_dir_loc}\\config.yaml"
+      @data_dir_loc = "#{base_dir}/data"
+      @log_dir_loc = "#{base_dir}/logs"
+      @user_toml = "#{@config_dir_loc}/user.toml"
+      @agent_key = "#{@data_dir_loc}/node-management-agent-key.pem"
+      @ca_cert = "#{@data_dir_loc}/ca-cert.pem"
+      @node_guid = "#{@data_dir_loc}/node_guid"
+      @nodman_config = "#{@config_dir_loc}/config.yaml"
     else
       base_dir = if new_resource.enroll_type == 'partial'
                    "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}"
