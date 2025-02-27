@@ -5,7 +5,7 @@ poll_interval = "10s"
 log_level = "debug"
 log_to_stdout = true
 log_to_file = true
-log_file_path = ""
+log_file_path = "<%= @log_dir %>/logs.log"
 
 [gohai]
 gohai_attributes = []
@@ -14,8 +14,8 @@ azure_values = []
 node_id = "<%= @node_id %>"
 node_role_link_id = "<%= @node_role_link_id %>"
 platform_credentials_path= "<%= @platform_credential_path %>"
-insecure= false
-root_ca_path= ""
+root_ca_path = "<%=@ca_cert_path%>"
+insecure = <%=@insecure%>
 
 [api]
 tenant_fqdns = "<%= @chef_platform_url %>:<%= @api_port %>"

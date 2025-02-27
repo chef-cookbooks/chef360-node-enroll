@@ -23,6 +23,8 @@ gateway_config:
   tenantfqdns: "<%= @chef_platform_url %>:<%= @api_port %>"
   node_role_link_id: "<%= @node_role_link_id %>"
   platform_credential_path: "<%= @platform_credential_path %>"
+  root_ca_path: "<%=@ca_cert_path%>"
+  insecure: <%=@insecure%>
 interpreters:
   - name: "chef-platform/shell-interpreter"
     path: "<%= @chef_tools_dir_path %>/shell-interpreter/shell-interpreter"

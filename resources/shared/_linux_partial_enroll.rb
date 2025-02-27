@@ -20,7 +20,7 @@ action_class do
 
   def wait_till_data_skills_files_are_present
     runner_data_file_path = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}/data/skills/#{node['enroll']['runner_pkg']}/config/courier-runner-template"
-    gohai_data_file_path = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}/data/skills/#{node['enroll']['gohai_pkg']}/config/default"
+    gohai_data_file_path = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}/data/skills/#{node['enroll']['gohai_pkg']}/config/chef-gohai-template"
 
     data_file_paths = [runner_data_file_path, gohai_data_file_path]
 
@@ -58,19 +58,28 @@ action_class do
   end
 
   def install_chef_gohai
-    courier_gohai_default_file = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}/data/skills/#{node['enroll']['gohai_pkg']}/config/default"
+    is_secure = new_resource.chef_platform_url.start_with?('https')
+    courier_gohai_default_file = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}/data/skills/#{node['enroll']['gohai_pkg']}/config/chef-gohai-template"
     platform_credential_path = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}/data/chef-gohai-key.pem"
     config_file_path = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['gohai_pkg']}/config/config.toml"
     exec_start_cmd = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['gohai_pkg']}/#{node['enroll']['gohai_pkg']} run #{config_file_path}"
+    log_dir = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['gohai_pkg']}/logs"
+    ca_cert_path  = ""
+    if is_secure
+      ca_cert_path = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}/data/ca-cert.pem"
+    end
 
     content = TOML.load_file(courier_gohai_default_file)
 
     service_template_vars = {}
+    service_template_vars[:log_dir] = log_dir
     service_template_vars[:node_id] = node['enroll']['node_id']
     service_template_vars[:chef_platform_url] = new_resource.chef_platform_url
     service_template_vars[:api_port] = new_resource.api_port
     service_template_vars[:node_role_link_id] = content['gohai']['node_role_link_id']
     service_template_vars[:platform_credential_path] = platform_credential_path
+    service_template_vars[:ca_cert_path] = ca_cert_path
+    service_template_vars[:insecure] = !is_secure
     create_tool_config_file(node['enroll']['gohai_pkg'], 'gohai_config.erb', service_template_vars, 'config.toml')
 
     service_vars = {}
@@ -90,12 +99,17 @@ action_class do
 
   # Handles both Linux, Mac
   def install_chef_runner
+    is_secure = new_resource.chef_platform_url.start_with?('https')
     courier_runner_template_file = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}/data/skills/#{node['enroll']['runner_pkg']}/config/courier-runner-template"
     platform_credential_path = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}/data/courier-runner-key.pem"
     log_dir = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['runner_pkg']}/logs"
     data_dir = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['runner_pkg']}/data"
     config_file_path = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['runner_pkg']}/config/config.yaml"
     exec_start_cmd = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['runner_pkg']}/#{node['enroll']['runner_pkg']} --config #{config_file_path}"
+    ca_cert_path  = ""
+    if is_secure
+      ca_cert_path = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}/data/ca-cert.pem"
+    end
 
     content = TOML.load_file(courier_runner_template_file)
 
@@ -108,6 +122,8 @@ action_class do
     service_template_vars[:node_role_link_id] = content['gateway_config']['node_role_link_id']
     service_template_vars[:platform_credential_path] = platform_credential_path
     service_template_vars[:chef_tools_dir_path] = new_resource.chef_tools_dir_path
+    service_template_vars[:ca_cert_path] = ca_cert_path
+    service_template_vars[:insecure] = !is_secure
     create_tool_config_file(node['enroll']['runner_pkg'], 'courier_runner_config.erb', service_template_vars, 'config.yaml')
 
     service_vars = {}
