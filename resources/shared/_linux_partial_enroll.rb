@@ -64,7 +64,7 @@ action_class do
     config_file_path = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['gohai_pkg']}/config/config.toml"
     exec_start_cmd = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['gohai_pkg']}/#{node['enroll']['gohai_pkg']} run #{config_file_path}"
     log_dir = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['gohai_pkg']}/logs"
-    ca_cert_path  = ""
+    ca_cert_path = ''
     if is_secure
       ca_cert_path = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}/data/ca-cert.pem"
     end
@@ -106,7 +106,7 @@ action_class do
     data_dir = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['runner_pkg']}/data"
     config_file_path = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['runner_pkg']}/config/config.yaml"
     exec_start_cmd = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['runner_pkg']}/#{node['enroll']['runner_pkg']} --config #{config_file_path}"
-    ca_cert_path  = ""
+    ca_cert_path = ''
     if is_secure
       ca_cert_path = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}/data/ca-cert.pem"
     end
