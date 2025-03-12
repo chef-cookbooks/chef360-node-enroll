@@ -20,7 +20,7 @@ action_class do
 
   def wait_till_data_skills_files_are_present
     runner_data_file_path = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}/data/skills/#{node['enroll']['runner_pkg']}/config/courier-runner-template"
-    gohai_data_file_path = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}/data/skills/#{node['enroll']['gohai_pkg']}/config/chef-gohai-template"
+    gohai_data_file_path = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}/data/skills/#{node['enroll']['gohai_pkg']}/config/default"
 
     data_file_paths = [runner_data_file_path, gohai_data_file_path]
 
@@ -59,7 +59,7 @@ action_class do
 
   def install_chef_gohai
     is_secure = new_resource.chef_platform_url.start_with?('https')
-    courier_gohai_default_file = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}/data/skills/#{node['enroll']['gohai_pkg']}/config/chef-gohai-template"
+    courier_gohai_default_file = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}/data/skills/#{node['enroll']['gohai_pkg']}/config/default"
     platform_credential_path = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}/data/chef-gohai-key.pem"
     config_file_path = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['gohai_pkg']}/config/config.toml"
     exec_start_cmd = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['gohai_pkg']}/#{node['enroll']['gohai_pkg']} run #{config_file_path}"

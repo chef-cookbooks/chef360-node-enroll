@@ -3,7 +3,7 @@ maintainer 'Varun Sharma'
 maintainer_email 'varun.sharma@progress.com'
 license 'All Rights Reserved'
 description 'Installs/Configures chef360-node-enroll'
-version '1.0.1'
+version '1.0.2'
 chef_version '>= 16.0'
 
 # The `issues_url` points to the location where issues for this cookbook are

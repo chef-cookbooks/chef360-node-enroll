@@ -116,7 +116,7 @@ action_class do
                elsif os == 'Darwin' && machine == 'arm64'
                  'darwin-arm64'
                elsif os == 'GNU/Linux' && (machine == 'x86_64' || machine == 'i386')
-                 'linux-386'
+                 'linux-amd64'
                elsif os == 'GNU/Linux' && machine == 'arm64'
                  'linux-arm64'
                elsif os == 'Windows' && machine == 'x86_64'
