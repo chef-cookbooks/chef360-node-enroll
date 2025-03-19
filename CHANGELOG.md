@@ -17,3 +17,7 @@ This file is used to list changes made in each version of the chef360-node-enrol
 ## 1.0.3
 
 - Added few client side attributes related to cookbook enrol while registering to Chef 360
+
+## 1.0.4
+
+- Added support to use custom Habitat server while downloading core / node management agent on the nodes

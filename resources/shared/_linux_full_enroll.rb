@@ -12,6 +12,7 @@ action_class do
       AGENT_BLDR_ORIGIN=${AGENT_BLDR_ORIGIN:="chef-platform"}
       AGENT_BLDR_CHANNEL=${AGENT_BLDR_CHANNEL:="stable"}
       NODE_AGENT_PKG="#{node['enroll']['nodeman_pkg']}"
+      export HAB_BLDR_URL=#{new_resource.hab_builder_url}
 
       # Install the node agent first (load is somehow not picking from non stable channel)
       sudo -E hab pkg install "${AGENT_BLDR_ORIGIN}/${NODE_AGENT_PKG}" --channel "${AGENT_BLDR_CHANNEL}"
@@ -24,6 +25,7 @@ action_class do
 
     bash 'load_nodman_svc' do
       code <<-EOH
+      export HAB_BLDR_URL=#{new_resource.hab_builder_url}
       hab svc load chef-platform/#{node['enroll']['nodeman_pkg']} --force
       hab svc start chef-platform/#{node['enroll']['nodeman_pkg']}
       EOH
@@ -75,6 +77,7 @@ action_class do
 
     bash 'install_core_cacerts' do
       code <<-EOH
+        export HAB_BLDR_URL=#{new_resource.hab_builder_url}
         export HAB_LICENSE=accept
         export HAB_NONINTERACTIVE=true
         hab pkg install core/cacerts
@@ -85,6 +88,7 @@ action_class do
 
     bash 'install_core_hab_sup' do
       code <<-EOH
+        export HAB_BLDR_URL=#{new_resource.hab_builder_url}
         export HAB_LICENSE=accept
         export HAB_NONINTERACTIVE=true
         hab pkg install core/hab-sup
