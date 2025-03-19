@@ -49,7 +49,7 @@ node_management_enroll 'Enroll Node' do
   hab_builder_url '<HABITAT_BUILDER_URL>'
   working_dir_path '<VALID_DIR_PATH>'
   root_ca node['enroll']['root_ca']
-  ssl_verify_mode <:verify_peer,:verify_peer>
+  ssl_verify_mode <:verify_none/:verify_peer>
   upgrade_skills <false/true>
 end
 ```

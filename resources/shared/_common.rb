@@ -42,11 +42,6 @@ action_class do
 
   # Handles both Linux and Windows
   def create_tool_config_file(tool_name, service_template_source, service_template_vars, config_file_name)
-    config_dir_loc = ''
-    log_dir_loc = ''
-    config_file = ''
-    data_dir_loc = ''
-
     config_dir_loc = "#{new_resource.chef_tools_dir_path}/#{tool_name}/config"
     log_dir_loc = "#{new_resource.chef_tools_dir_path}/#{tool_name}/logs"
     if platform?('windows')
@@ -132,7 +127,8 @@ action_class do
         api_port: new_resource.api_port,
         platform_credentials_path: local_agent_key_path,
         insecure: !is_secure,
-        ca_cert_path: local_ca_cert_path
+        ca_cert_path: local_ca_cert_path,
+        hab_builder_url: new_resource.hab_builder_url
       )
       action :create
     end
@@ -182,7 +178,7 @@ action_class do
   end
 
   def define_node_mgmt_config_dirs
-    base_path = platform?('windows') ? 'c:/hab' : '/hab'
+    _base_path = platform?('windows') ? 'c:/hab' : '/hab'
     user_config_path = platform?('windows') ? 'c:/hab/user' : '/hab/user'
     svc_path = platform?('windows') ? 'c:/hab/svc' : '/hab/svc'
 

@@ -13,3 +13,7 @@ This file is used to list changes made in each version of the chef360-node-enrol
 ## 1.0.2
 
 - Handled the depreciated i386 package in Chef 360 downloads 
+
+## 1.0.3
+
+- Added few client side attributes related to cookbook enrol while registering to Chef 360

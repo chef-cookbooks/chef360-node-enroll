@@ -26,7 +26,23 @@ module NodeManagementHelpers
 
       # 2. Create a node with the ID
       url = "#{chef_platform_url}:#{api_port}/node/management/v1/nodes"
-      payload = { 'id' => node_id, 'cohortId' => cohort_id, 'source' => 'enrollment' }
+      payload = {
+        'id' => node_id,
+        'cohortId' => cohort_id,
+        'source' => 'enrollment',
+        'attributes' => [
+          {
+            'name' => 'fqdn',
+            'value' => node['ipaddress'],
+            'namespace' => 'enroll',
+          },
+          {
+            'name' => 'enrollment_source',
+            'value' => 'cookbook',
+            'namespace' => 'enroll',
+          },
+        ],
+      }
       response = HTTPHelper.http_request(url, payload, 'post', access_token, ssl_mode)
       reg_node_id = response['item']['nodeId']
 
@@ -44,7 +60,7 @@ module NodeManagementHelpers
       # 4. Assign the Node the Node Management Role
       url = "#{chef_platform_url}:#{api_port}/platform/node-accounts/v1/node/#{node_auth_id}/role"
       payload = { 'name' => 'node-management-agent', 'roleId' => node_role_id }
-      response = HTTPHelper.http_request(url, payload, 'post', access_token, ssl_mode)
+      _response = HTTPHelper.http_request(url, payload, 'post', access_token, ssl_mode)
       # node_security_role_id = response['item']['id']
 
       # 5. Force new credential rotation on the Node
