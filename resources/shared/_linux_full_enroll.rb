@@ -104,7 +104,8 @@ action_class do
       cookbook node['enroll']['cookbook_name']
       source 'hab-sup.service.erb'
       variables(
-        ssl_cert_file: lazy { ssl_cert_file }
+        ssl_cert_file: lazy { ssl_cert_file },
+        hab_builder_url: new_resource.hab_builder_url
       )
     end
 

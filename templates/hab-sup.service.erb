@@ -3,6 +3,7 @@ Description=Habitat Supervisor
 
 [Service]
 ExecStartPre=/bin/bash -c "/bin/systemctl set-environment SSL_CERT_FILE=<%= @ssl_cert_file %>"
+Environment="HAB_BLDR_URL=<%=@hab_builder_url%>"
 Type=simple
 ExecStart=/bin/hab sup run
 ExecStop=/bin/hab sup term
