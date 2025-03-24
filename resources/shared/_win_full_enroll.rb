@@ -83,6 +83,7 @@ action_class do
       code <<-EOH
         $env:HAB_LICENSE = "accept"
         $env:HAB_NONINTERACTIVE = "true"
+        $env:HAB_BLDR_URL = "#{new_resource.hab_builder_url}"
 
         $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
 
@@ -120,6 +121,7 @@ action_class do
       code <<-EOH
         $env:HAB_LICENSE = "accept"
         $env:HAB_NONINTERACTIVE = "true"
+        $env:HAB_BLDR_URL = "#{new_resource.hab_builder_url}"
         $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
 
         $agentBldrOrigin = "chef-platform"
@@ -144,6 +146,7 @@ action_class do
       code <<-EOH
         $env:HAB_LICENSE = "accept"
         $env:HAB_NONINTERACTIVE = "true"
+        $env:HAB_BLDR_URL = "#{new_resource.hab_builder_url}"
         $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
 
         hab svc load chef-platform/#{node['enroll']['nodeman_pkg']} --force
