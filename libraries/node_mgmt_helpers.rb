@@ -45,13 +45,15 @@ module NodeManagementHelpers
       }
       response = HTTPHelper.http_request(url, payload, 'post', access_token, ssl_mode)
       reg_node_id = response['item']['nodeId']
+      Chef::Log.info("reg_node_id: #{reg_node_id}")
 
       # 3. Register the Node with Auth system
       url = "#{chef_platform_url}:#{api_port}/platform/node-accounts/v1/node"
-      payload = { 'nodeRefId' => reg_node_id }
+      payload = { 'nodeRefId' => node_id }
       response = HTTPHelper.http_request(url, payload, 'post', access_token, ssl_mode)
       node_auth_id = response['item']['id']
       # node_ref_id = response['item']['nodeRefId']
+      Chef::Log.info("node_auth_id: #{node_auth_id}")
 
       # Define node_role_id
       # DO NOT MODIFY: This will same for Chef-360 platform future release

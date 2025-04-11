@@ -29,3 +29,7 @@ This file is used to list changes made in each version of the chef360-node-enrol
 ## 1.0.6
 
 - Modified the code to make hab-sup service to connect to user defined hab builder instead of default public builder for Windows enrollment
+
+## 1.0.7
+
+- Added debug logs and passing locally generated node_id in API platform/node-accounts/v1/node 

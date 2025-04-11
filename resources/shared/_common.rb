@@ -17,6 +17,7 @@ action_class do
   def register_node
     # Check if node is already enrolled
     node_guid_file = node['enroll']['node_guid_file']
+
     if new_resource.enroll_type == 'partial'
       node_guid_file = if platform?('windows')
                          "#{new_resource.chef_tools_dir_path}\\#{node['enroll']['nodeman_pkg']}\\data\\node_guid"
@@ -28,7 +29,8 @@ action_class do
     node.default['enroll']['enrolled'] = ::File.exist?(node_guid_file)
 
     if node['enroll']['enrolled']
-      node_uuid = shell_out("cat #{node_guid_file}").stdout.chomp
+      # node_uuid = shell_out("cat #{node_guid_file}").stdout.chomp
+      node_uuid = shell_out("#{platform?('windows') ? 'type' : 'cat'} #{node_guid_file}").stdout.chomp
       node.default['enroll']['node_id'] = node_uuid
     else
       Chef::Log.info('Node is not enrolled, enrolling...')
