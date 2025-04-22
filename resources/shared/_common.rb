@@ -212,4 +212,34 @@ action_class do
     end
     require 'toml'
   end
+
+  def create_hab_cert
+    is_secure = new_resource.chef_platform_url.start_with?('https')
+
+    unless is_secure
+      return
+    end
+
+    hab_ssl_dir_path = '/hab/cache/ssl'
+    if platform?('windows')
+      hab_ssl_dir_path = 'C:\\hab\\cache\\ssl'
+    end
+
+    directory hab_ssl_dir_path do
+      recursive true
+    end
+
+    hab_root_ca_file_name = 'root_ca.pem'
+    if platform?('windows')
+      file "#{hab_ssl_dir_path}\\#{hab_root_ca_file_name}" do
+        content new_resource.root_ca
+        action :create
+      end
+    else
+      file "#{hab_ssl_dir_path}/#{hab_root_ca_file_name}" do
+        content new_resource.root_ca
+        action :create
+      end
+    end
+  end
 end

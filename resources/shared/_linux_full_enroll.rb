@@ -67,6 +67,8 @@ action_class do
   end
 
   def install_and_configure_hab
+    create_hab_cert
+
     bash 'copy_hab_to_usr_bin' do
       code <<-EOH
         install -v #{new_resource.working_dir_path}/hab_package/hab /usr/bin/hab

@@ -1,0 +1,19 @@
+---
+# Cookbook:: chef360-node-enroll
+
+# The Chef InSpec reference, with examples and extensive documentation, can be
+# found at https://docs.chef.io/inspec/profiles/
+
+name: full_enroll
+title: full_enroll
+maintainer: The Authors
+copyright: The Authors
+copyright_email: you@example.com
+license: All Rights Reserved
+summary: A Chef InSpec Compliance Profile
+version: 0.1.0
+supports:
+  platform: os
+depends:
+  - name: inspec-habitat
+    git: https://github.com/inspec/inspec-habitat.git

@@ -69,14 +69,16 @@ action_class do
       ca_cert_path = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}/data/ca-cert.pem"
     end
 
-    content = TOML.load_file(courier_gohai_default_file)
+    node_role_link_id = get_node_role_link_id(courier_gohai_default_file)
+
+    Chef::Log.info("node_role_link_id: #{node_role_link_id}")
 
     service_template_vars = {}
     service_template_vars[:log_dir] = log_dir
     service_template_vars[:node_id] = node['enroll']['node_id']
     service_template_vars[:chef_platform_url] = new_resource.chef_platform_url
     service_template_vars[:api_port] = new_resource.api_port
-    service_template_vars[:node_role_link_id] = content['gohai']['node_role_link_id']
+    service_template_vars[:node_role_link_id] = node_role_link_id
     service_template_vars[:platform_credential_path] = platform_credential_path
     service_template_vars[:ca_cert_path] = ca_cert_path
     service_template_vars[:insecure] = !is_secure
@@ -111,7 +113,9 @@ action_class do
       ca_cert_path = "#{new_resource.chef_tools_dir_path}/#{node['enroll']['nodeman_pkg']}/data/ca-cert.pem"
     end
 
-    content = TOML.load_file(courier_runner_template_file)
+    node_role_link_id = get_node_role_link_id(courier_runner_template_file)
+
+    Chef::Log.info("node_role_link_id: #{node_role_link_id}")
 
     service_template_vars = {}
     service_template_vars[:log_dir] = log_dir
@@ -119,7 +123,7 @@ action_class do
     service_template_vars[:chef_platform_url] = new_resource.chef_platform_url
     service_template_vars[:data_dir] = data_dir
     service_template_vars[:api_port] = new_resource.api_port
-    service_template_vars[:node_role_link_id] = content['gateway_config']['node_role_link_id']
+    service_template_vars[:node_role_link_id] = node_role_link_id
     service_template_vars[:platform_credential_path] = platform_credential_path
     service_template_vars[:chef_tools_dir_path] = new_resource.chef_tools_dir_path
     service_template_vars[:ca_cert_path] = ca_cert_path
@@ -254,5 +258,21 @@ action_class do
       command "launchctl bootstrap system #{plist_path}"
       not_if { `launchctl list | grep #{service_name}`.include?(service_name) }
     end
+  end
+
+  def get_node_role_link_id(file_path)
+    node_role_link_id = nil
+
+    ::File.foreach(file_path) do |line|
+      line.strip!
+      next if line.empty? || line.start_with?('#') || line.start_with?('[')
+
+      if line =~ /^node_role_link_id\s*=\s*"(.*?)"/
+        node_role_link_id = Regexp.last_match(1)
+        break
+      end
+    end
+
+    node_role_link_id
   end
 end

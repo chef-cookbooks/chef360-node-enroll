@@ -49,7 +49,7 @@ module NodeManagementHelpers
 
       # 3. Register the Node with Auth system
       url = "#{chef_platform_url}:#{api_port}/platform/node-accounts/v1/node"
-      payload = { 'nodeRefId' => node_id }
+      payload = { 'nodeRefId' => reg_node_id }
       response = HTTPHelper.http_request(url, payload, 'post', access_token, ssl_mode)
       node_auth_id = response['item']['id']
       # node_ref_id = response['item']['nodeRefId']

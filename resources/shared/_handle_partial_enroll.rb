@@ -1,25 +1,27 @@
 chef_version = Gem::Version.new(node['chef_packages']['chef']['version'])
-if chef_version < Gem::Version.new('18.5.0')
-  cache_path = Chef::Config[:file_cache_path]
-  use "#{cache_path}/cookbooks/#{node['enroll']['cookbook_name']}/resources/shared/_download_packages.rb"
+if chef_version < Gem::Version.new('18.0.0')
+  resource_path = ::File.join(Chef::Config[:file_cache_path],
+    'cookbooks', node['enroll']['cookbook_name'],
+    'resources', 'shared', '_download_packages.rb')
+  instance_eval(IO.read(resource_path), resource_path)
+
   if platform?('windows')
-    # use "#{cache_path}/cookbooks/#{node['enroll']['cookbook_name']}/resources/shared/_win_partial_enroll.rb"
+    # NOT YET SUPPORTED
   else
-    use "#{cache_path}/cookbooks/#{node['enroll']['cookbook_name']}/resources/shared/_linux_partial_enroll.rb"
+    resource_path = ::File.join(Chef::Config[:file_cache_path],
+      'cookbooks', node['enroll']['cookbook_name'],
+      'resources', 'shared', '_linux_partial_enroll.rb')
   end
+  instance_eval(IO.read(resource_path), resource_path)
+elsif platform?('windows')
+  # NOT YET SUPPORTED
 else
   use 'shared/_download_packages'
-  if platform?('windows')
-    # use 'shared/_win_partial_enroll.rb'
-  else
-    use 'shared/_linux_partial_enroll.rb'
-  end
+  use 'shared/_linux_partial_enroll.rb'
 end
 
 action_class do
   def enroll_node_partial
-    install_toml
-
     download_tool_packages
 
     # Install Node Management Agent and confgure it as a system service

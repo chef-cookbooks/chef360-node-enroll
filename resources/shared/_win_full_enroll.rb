@@ -78,6 +78,8 @@ action_class do
       # notifies :run, 'powershell_script[verify_hab]', :immediately
     end
 
+    create_hab_cert
+
     # Configure Hab
     powershell_script 'configure_hab' do
       code <<-EOH

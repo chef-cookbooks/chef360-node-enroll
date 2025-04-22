@@ -32,4 +32,11 @@ This file is used to list changes made in each version of the chef360-node-enrol
 
 ## 1.0.7
 
-- Added debug logs and passing locally generated node_id in API platform/node-accounts/v1/node 
+- Added debug logs and passing locally generated node_id in API platform/node-accounts/v1/node
+
+## 1.0.8
+
+- Fixed cookbook compilation issues in Chef Client 17.x.x
+- Added compliance profiles for full and partial enroll
+- Handled Habitat installation on secure Chef env
+- Removed the dependency of toml gem 
