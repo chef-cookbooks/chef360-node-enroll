@@ -28,16 +28,38 @@ The `node_management_enroll` resource supports two levels of enrollment:
 
 ### Obtaining `root_ca`
 1) **Self-Signed Environment**: Run the below command on the host where Chef 360 server is installed:
-   ```sh
-   kubectl get secret --namespace <<namespace>> common-generated-certs -o jsonpath="{.data['ca\.crt']}" | base64 -d
-   ```
+```sh
+kubectl get secret --namespace <<namespace>> common-generated-certs -o jsonpath="{.data['ca\.crt']}" | base64 -d
+```
 2) **Custom Certificate**: Use the same `root_ca` that was used while configuring the Chef 360 API/UI section.
-3) **Chef 360 SaaS**: Contact the Progress IT Team for obtaining the root CA.
+3) **Chef 360 SaaS**: Copy of the Chef 360 SaaS public key and add it to your wrapper cookbook:
 
-
+  ```
+  -----BEGIN CERTIFICATE-----
+  MIIDXzCCAkegAwIBAgILBAAAAAABIVhTCKIwDQYJKoZIhvcNAQELBQAwTDEgMB4
+  GA1UECxMXR2xvYmFsU2lnbiBSb290IENBIC0gUjMxEzARBgNVBAoTCkdsb2JhbF
+  NpZ24xEzARBgNVBAMTCkdsb2JhbFNpZ24wHhcNMDkwMzE4MTAwMDAwWhcNMjkwM
+  zE4MTAwMDAwWjBMMSAwHgYDVQQLExdHbG9iYWxTaWduIFJvb3QgQ0EgLSBSMzET
+  MBEGA1UEChMKR2xvYmFsU2lnbjETMBEGA1UEAxMKR2xvYmFsU2lnbjCCASIwDQY
+  JKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMwldpB5BngiFvXAg7aEyiie/QV2Ec
+  WtiHL8RgJDx7KKnQRfJMsuS+FggkbhUqsMgUdwbN1k0ev1LKMPgj0MK66X17YUh
+  hB5uzsTgHeMCOFJ0mpiLx9e+pZo34knlTifBtc+ycsmWQ1z3rDI6SYOgxXG71uL
+  0gRgykmmKPZpO/bLyCiR5Z2KYVc3rHQU3HTgOu5yLy6c+9C7v/U9AOEGM+iCK65
+  TpjoWc4zdQQ4gOsC0p6Hpsk+QLjJg6VfLuQSSaGjlOCZgdbKfd/+RFO+uIEn8rU
+  AVSNECMWEZXriX7613t2Saer9fwRPvm2L7DWzgVGkWqQPabumDk3F2xmmFghcCA
+  wEAAaNCMEAwDgYDVR0PAQH/BAQDAgEGMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0O
+  BBYEFI/wS3+oLkUkrk1Q+mOai97i3Ru8MA0GCSqGSIb3DQEBCwUAA4IBAQBLQNv
+  AUKr+yAzv95ZURUm7lgAJQayzE4aGKAczymvmdLm6AC2upArT9fHxD4q/c2dKg8
+  dEe3jgr25sbwMpjjM5RcOO5LlXbKr8EpbsU8Yt5CRsuZRj+9xTaGdWPoO4zzUhw
+  8lo/s7awlOqzJCK6fBdRoyV3XpYKBovHd7NADdBj+1EbddTKJd+82cEHhXXipa0
+  095MJ6RMG3NzdvQXmcIfeg7jLQitChws/zyrVQ4PkX4268NXSb7hLi18YIvDQVE
+  TI53O9zJrlAGomecsMx86OyXShkDOOyyGeMlhLxS67ttVb9+E7gUJTb0o2HLO02
+  JQZR7rkpeDMdmztcpHWD9f
+  -----END CERTIFICATE-----
+  ```
 
 ### Example Usage
-
+      
 ```ruby
 node_management_enroll 'Enroll Node' do
   chef_platform_url '<CHEF-360-FQDN>'
@@ -53,5 +75,47 @@ node_management_enroll 'Enroll Node' do
   upgrade_skills <false/true>
 end
 ```
+      
+
+### Generating Access Key and Secret Key
+
+To generate an access key and secret key, follow the steps below.
+
+> **Note:**  
+> Ensure you run this command on a Chef Workstation that is registered with the Chef 360 server.
+
+#### Command
+
+Use the following CLI command to generate an access key and secret key:
+
+```bash
+chef-platform-auth-cli user-account self create-token --body '{"expiration": "EXPIRATION_DATE", "name": "ANY_TOKEN_NAME"}' --profile VALID_PROFILE_NAME
+```
+
+#### Example Response
+
+```json
+{
+  "item": {
+    "accessKey": "6QIUKP4WIXD4RVAF0BQ3",
+    "expiration": "2027-12-31T11:42:23-05:00",
+    "id": "bcba5b7a-fb0b-4a62-b442-7ba7bda5e05a",
+    "name": "CI-CD Token",
+    "role": {
+      "id": "5fcb0235-1e56-4ece-8857-404a5d39a290",
+      "name": "tenant-admin"
+    },
+    "secretKey": "x6aCg1NckQoLsQnere26fmGgD0RiWOrf4RNXBhlg"
+  }
+}
+```
+
+#### Important Notes
+
+- The `--profile` you use in the command must have the **node-manager** role assigned to it.
+- Replace `EXPIRATION_DATE` with the desired expiration timestamp (e.g., `2027-12-31T11:42:23-05:00`).
+- Replace `ANY_TOKEN_NAME` with a meaningful token name for easy identification.
+- Replace `VALID_PROFILE_NAME` with the name of a valid profile configured on your workstation.
+ 
 
 
