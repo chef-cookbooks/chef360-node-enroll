@@ -39,4 +39,8 @@ This file is used to list changes made in each version of the chef360-node-enrol
 - Fixed cookbook compilation issues in Chef Client 17.x.x
 - Added compliance profiles for full and partial enroll
 - Handled Habitat installation on secure Chef env
-- Removed the dependency of toml gem 
+- Removed the dependency of toml gem
+
+## 1.0.9
+
+- Added instructions to README file for obtaining secret, access key and root ca for SaaS env
