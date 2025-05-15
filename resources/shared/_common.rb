@@ -29,16 +29,39 @@ action_class do
     node.default['enroll']['enrolled'] = ::File.exist?(node_guid_file)
 
     if node['enroll']['enrolled']
-      # node_uuid = shell_out("cat #{node_guid_file}").stdout.chomp
       node_uuid = shell_out("#{platform?('windows') ? 'type' : 'cat'} #{node_guid_file}").stdout.chomp
       node.default['enroll']['node_id'] = node_uuid
     else
       Chef::Log.info('Node is not enrolled, enrolling...')
-      node_id, node_role_link_id, node_private_cert, node_public_cert = obtain_node_credentials(new_resource.ssl_verify_mode)
-      node.default['enroll']['node_id'] = node_id
-      node.default['enroll']['node_role_link_id'] = node_role_link_id
-      node.default['enroll']['node_private_cert'] = node_private_cert
-      node.default['enroll']['node_public_cert'] = node_public_cert
+      if isNodeRegistered
+        Chef::Log.info('Node is already registered')
+        node_id, node_role_link_id, node_private_cert, node_public_cert = get_node_credentials
+        Chef::Log.info('Node ID: ' + node_id)
+        Chef::Log.info('Node Role Link ID: ' + node_role_link_id)
+        Chef::Log.info('Node Private Cert: ' + node_private_cert)
+        Chef::Log.info('Node Public Cert: ' + node_public_cert)
+        
+        # Store the local credentials in node attributes
+        node.default['enroll']['node_id'] = node_id
+        node.default['enroll']['node_role_link_id'] = node_role_link_id
+        node.default['enroll']['node_private_cert'] = node_private_cert
+        node.default['enroll']['node_public_cert'] = node_public_cert
+      else
+        Chef::Log.info('Node is not registered.Obtaining node credentials...')
+
+        node_id, node_role_link_id, node_private_cert, node_public_cert = obtain_node_credentials(new_resource.ssl_verify_mode)
+        Chef::Log.info('Node ID: ' + node_id)
+        Chef::Log.info('Node Role Link ID: ' + node_role_link_id)
+        Chef::Log.info('Node Private Cert: ' + node_private_cert)
+        Chef::Log.info('Node Public Cert: ' + node_public_cert)
+        
+        # Store the local credentials in node attributes
+        node.default['enroll']['node_id'] = node_id
+        node.default['enroll']['node_role_link_id'] = node_role_link_id
+        node.default['enroll']['node_private_cert'] = node_private_cert
+        node.default['enroll']['node_public_cert'] = node_public_cert
+        create_node_credential_files(node_id, node_role_link_id, node_private_cert, node_public_cert)
+      end
     end
   end
 
@@ -241,5 +264,145 @@ action_class do
         action :create
       end
     end
+  end
+
+  # Create credential files in Chef cache location after obtaining credentials
+  def create_node_credential_files(node_id, node_role_link_id, node_private_cert, node_public_cert)
+    # Get the Chef cache location
+    cache_dir = Chef::Config[:file_cache_path]
+    credentials_dir = ::File.join(cache_dir, 'chef360_node_credentials')
+
+    # Create the directory if it doesn't exist
+    directory credentials_dir do
+      recursive true
+      # Use generic permissions that work on both platforms
+      mode platform?('windows') ? nil : '0755'
+      action :create
+    end
+
+    # Define all credentials
+    credentials = [
+      {
+        name: 'node_id.txt',
+        content: node_id,
+        mode: platform?('windows') ? nil : '0644',
+        sensitive: true,
+      },
+      {
+        name: 'node_role_link_id.txt',
+        content: node_role_link_id,
+        mode: platform?('windows') ? nil : '0644',
+        sensitive: true,
+      },
+      {
+        name: 'node_private_cert.pem',
+        content: node_private_cert,
+        mode: platform?('windows') ? nil : '0600',
+        sensitive: true,
+      },
+      {
+        name: 'node_public_cert.pem',
+        content: node_public_cert,
+        mode: platform?('windows') ? nil : '0644',
+        sensitive: false,
+      },
+    ]
+
+    # Create all credential files
+    credentials.each do |cred|
+      file_path = ::File.join(credentials_dir, cred[:name])
+
+      file file_path do
+        # Handle line endings appropriately for the platform
+        content platform?('windows') ? cred[:content].gsub(/\r?\n/, "\r\n") : cred[:content]
+        # Only set mode for non-Windows platforms
+        mode cred[:mode]
+        sensitive cred[:sensitive]
+        action :create
+      end
+    end
+
+    # Log the location where files were created
+    Chef::Log.info("Node credential files created in: #{credentials_dir}")
+  end
+
+  # Check if the node is already registered based on presence of credential files
+  def isNodeRegistered
+    # Get the Chef cache location
+    cache_dir = Chef::Config[:file_cache_path]
+    credentials_dir = ::File.join(cache_dir, 'chef360_node_credentials')
+
+    # First check if credentials directory exists
+    unless ::File.directory?(credentials_dir)
+      Chef::Log.info("Credentials directory not found at: #{credentials_dir}")
+      return false
+    end
+
+    # List of required credential files
+    required_files = [
+      ::File.join(credentials_dir, 'node_id.txt'),
+      ::File.join(credentials_dir, 'node_role_link_id.txt'),
+      ::File.join(credentials_dir, 'node_private_cert.pem'),
+      ::File.join(credentials_dir, 'node_public_cert.pem'),
+    ]
+
+    # Check if all required files exist
+    all_files_exist = required_files.all? { |file| ::File.exist?(file) }
+
+    if all_files_exist
+      Chef::Log.info("Node registration credential files found in: #{credentials_dir}")
+    else
+      missing_files = required_files.reject { |file| ::File.exist?(file) }
+      Chef::Log.info("Node registration incomplete. Missing files: #{missing_files.join(', ')}")
+    end
+
+    all_files_exist
+  end
+
+  # Retrieve node credentials from the stored credential files
+  def get_node_credentials
+    # Get the Chef cache location
+    cache_dir = Chef::Config[:file_cache_path]
+    credentials_dir = ::File.join(cache_dir, 'chef360_node_credentials')
+
+    # Define credential files to read
+    credential_files = {
+      node_id: ::File.join(credentials_dir, 'node_id.txt'),
+      node_role_link_id: ::File.join(credentials_dir, 'node_role_link_id.txt'),
+      node_private_cert: ::File.join(credentials_dir, 'node_private_cert.pem'),
+      node_public_cert: ::File.join(credentials_dir, 'node_public_cert.pem'),
+    }
+
+    # Check if credentials directory exists
+    unless ::File.directory?(credentials_dir)
+      Chef::Log.warn("Credentials directory not found at: #{credentials_dir}")
+      return nil, nil, nil, nil
+    end
+
+    # Read each credential file if it exists
+    credentials = {}
+    missing_files = []
+
+    credential_files.each do |cred_type, file_path|
+      if ::File.exist?(file_path)
+        # Handle Windows line endings if present
+        content = ::File.read(file_path)
+        credentials[cred_type] = content.strip
+      else
+        missing_files << file_path
+        credentials[cred_type] = nil
+      end
+    end
+
+    # Log warning if any files are missing
+    unless missing_files.empty?
+      Chef::Log.warn("Some credential files are missing: #{missing_files.join(', ')}")
+    end
+
+    # Return the credentials in the same order as they're stored
+    [credentials[:node_id],
+           credentials[:node_role_link_id],
+           credentials[:node_private_cert],
+           credentials[:node_public_cert]]
   end
 end

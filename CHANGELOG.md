@@ -44,3 +44,8 @@ This file is used to list changes made in each version of the chef360-node-enrol
 ## 1.0.9
 
 - Added instructions to README file for obtaining secret, access key and root ca for SaaS env
+
+## 1.0.10
+
+- Fixed dynamic loading issues with partial resources in Chef 18.1.0
+- Fixed node re-registration issues during chef-client run failures

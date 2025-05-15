@@ -19,3 +19,25 @@ control 'che360-services' do
     end
   end
 end
+
+control 'chef360-courier-log-check' do
+  impact 1.0
+  title 'Verify courier-runner log contains expected data'
+  desc 'Check that the courier-runner log contains the string "failed to dequeue"'
+  
+  # Skip this control on Windows systems
+  only_if('Not running on Windows') do
+    !os.windows?
+  end
+  
+  # Set log path
+  log_path = '/etc/chef_platform/tools/courier-runner/logs/courier-log'
+  
+  only_if("Courier log file exists") do
+    file(log_path).exist?
+  end
+
+  describe file(log_path) do
+    its('content') { should include 'failed to dequeue' }
+  end
+end

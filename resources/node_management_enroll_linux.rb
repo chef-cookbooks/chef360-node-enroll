@@ -19,7 +19,7 @@ action :enroll do
 
   case new_resource.enroll_type
   when 'full'
-    if node.default['enroll']['enrolled']
+    if node['enroll']['enrolled']
       new_resource.updated_by_last_action(false)
     else
       converge_by('Enrolling_Node') { enroll_node_full }
@@ -35,7 +35,6 @@ action :enroll do
     elsif new_resource.upgrade_skills && node.default['enroll']['enrolled']
       converge_by('Enrolling_Node') { enroll_node_partial }
     end
-
   else
     Chef::Log.error("Unsupported enroll_type: #{new_resource.enroll_type}")
     raise "Unsupported enroll_type: #{new_resource.enroll_type}"

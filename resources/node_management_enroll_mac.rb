@@ -20,7 +20,7 @@ action :enroll do
   end
   register_node
   if !new_resource.upgrade_skills
-    if node.default['enroll']['enrolled']
+    if node['enroll']['enrolled']
       new_resource.updated_by_last_action(false)
     else
       converge_by('Enrolling_Node') { enroll_node_partial }

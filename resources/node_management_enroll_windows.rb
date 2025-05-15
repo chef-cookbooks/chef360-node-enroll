@@ -21,7 +21,7 @@ action :enroll do
     raise 'Partial enrollment on Windows is not yet supported'
   end
   register_node
-  if node.default['enroll']['enrolled']
+  if node['enroll']['enrolled']
     new_resource.updated_by_last_action(false)
   else
     converge_by('Enrolling_Node') { enroll_node_full }

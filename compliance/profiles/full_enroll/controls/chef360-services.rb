@@ -48,3 +48,20 @@ control 'chef360-habitat-services' do
     end
   end
 end
+
+control 'chef360-courier-log-check' do
+  impact 1.0
+  title 'Verify courier-runner log contains expected data'
+  desc 'Check that the courier-runner log contains the string "failed to dequeue"'
+  
+  # Set log path based on OS
+  log_path = os.windows? ? 'C:\\hab\\svc\\courier-runner\\logs\\courier-log' : '/hab/svc/courier-runner/logs/courier-log'
+  
+  only_if("Courier log file exists") do
+    file(log_path).exist?
+  end
+
+  describe file(log_path) do
+    its('content') { should include 'failed to dequeue' }
+  end
+end
