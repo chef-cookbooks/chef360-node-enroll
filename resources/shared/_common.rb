@@ -40,7 +40,7 @@ action_class do
         Chef::Log.info('Node Role Link ID: ' + node_role_link_id)
         Chef::Log.info('Node Private Cert: ' + node_private_cert)
         Chef::Log.info('Node Public Cert: ' + node_public_cert)
-        
+
         # Store the local credentials in node attributes
         node.default['enroll']['node_id'] = node_id
         node.default['enroll']['node_role_link_id'] = node_role_link_id
@@ -54,7 +54,7 @@ action_class do
         Chef::Log.info('Node Role Link ID: ' + node_role_link_id)
         Chef::Log.info('Node Private Cert: ' + node_private_cert)
         Chef::Log.info('Node Public Cert: ' + node_public_cert)
-        
+
         # Store the local credentials in node attributes
         node.default['enroll']['node_id'] = node_id
         node.default['enroll']['node_role_link_id'] = node_role_link_id

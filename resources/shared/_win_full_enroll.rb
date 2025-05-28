@@ -93,6 +93,7 @@ action_class do
         if ($LASTEXITCODE -ne 0) {
             Write-Host "Installing core/windows-service"
             hab pkg install core/windows-service
+            hab pkg install core/hab-sup
             if ($LASTEXITCODE -ne 0) {
                 Write-Host "Failed to install 'core/windows-service'."
                 Exit 1

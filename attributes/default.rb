@@ -11,3 +11,4 @@ default['enroll']['node_guid_file'] = if platform?('windows')
                                       else
                                         "/hab/svc/#{node['enroll']['nodeman_pkg']}/data/node_guid"
                                       end
+default['enroll']['hab_tmp_files'] = %w(install.sh configure_hab.sh install_hab.sh configureNodemanAgent.sh installNodemanAgent.sh hab-x86_64-linux.tar.gz hab-download-linux.tar.gz hab_package)

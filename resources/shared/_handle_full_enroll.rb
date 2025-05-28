@@ -39,9 +39,31 @@ action_class do
     Chef::Log.info('Beginning full node enrollment process')
     install_hab_full
     install_node_mgmt_full
+    delete_temp_files
     Chef::Log.info('Full node enrollment completed successfully')
   rescue StandardError => e
     Chef::Log.error("Failed to enroll node fully: #{e.message}")
     raise
+  end
+
+  def delete_temp_files
+    Chef::Log.info('Cleaning up temporary files and directories')
+
+    Array(node['enroll']['hab_tmp_files']).each do |file_name|
+      file_path = ::File.join(new_resource.working_dir_path, file_name)
+
+      if ::File.directory?(file_path)
+        Chef::Log.info("Deleting temporary directory: #{file_path}")
+        directory file_path do
+          recursive true
+          action :delete
+        end
+      else
+        Chef::Log.info("Deleting temporary file: #{file_path}")
+        file file_path do
+          action :delete
+        end
+      end
+    end
   end
 end

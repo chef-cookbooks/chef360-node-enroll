@@ -49,3 +49,7 @@ This file is used to list changes made in each version of the chef360-node-enrol
 
 - Fixed dynamic loading issues with partial resources in Chef 18.1.0
 - Fixed node re-registration issues during chef-client run failures
+
+## 1.0.11
+- Added cleanup functionality to automatically delete temporary files and directories
+- Added logic to install Habitat package core/hab-sup explicitly in case it does not get installed with core/windows-service

@@ -14,6 +14,10 @@ use 'shared/_handle_partial_enroll'
 
 default_action :enroll
 
+action :reenroll do
+  enroll_node_full
+end
+
 action :enroll do
   register_node
 
