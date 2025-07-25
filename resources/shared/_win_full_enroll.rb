@@ -81,6 +81,46 @@ action_class do
     create_hab_cert
 
     # Configure Hab
+    # powershell_script 'configure_hab' do
+    #   code <<-EOH
+    #     $env:HAB_LICENSE = "accept"
+    #     $env:HAB_NONINTERACTIVE = "true"
+    #     $env:HAB_BLDR_URL = "#{new_resource.hab_builder_url}"
+
+    #     $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
+
+    #     hab pkg path core/windows-service
+    #     if ($LASTEXITCODE -ne 0) {
+    #         Write-Host "Installing core/windows-service"
+    #         hab pkg install core/windows-service
+    #         hab pkg install core/hab-sup
+    #         if ($LASTEXITCODE -ne 0) {
+    #             Write-Host "Failed to install 'core/windows-service'."
+    #             Exit 1
+    #         }
+    #     }
+
+    #     $serviceStatus = Get-Service -Name "Habitat"
+    #     if ($serviceStatus.Status -ne "Running") {
+    #         Start-Service -Name "Habitat"
+    #         Write-Host "Habitat service started."
+    #     } else {
+    #         Write-Host "Habitat service is already running."
+    #     }
+    #   EOH
+    #   not_if <<-EOH
+    #     $serviceStatus = Get-Service -Name "Habitat" -ErrorAction SilentlyContinue
+    #     if ($serviceStatus) {
+    #         $serviceStatus.Status -eq "Running"
+    #     } else {
+    #         $false
+    #     }
+    #   EOH
+    #   live_stream true
+    # returns [0]
+    # end
+
+        # Configure Hab
     powershell_script 'configure_hab' do
       code <<-EOH
         $env:HAB_LICENSE = "accept"
@@ -93,19 +133,32 @@ action_class do
         if ($LASTEXITCODE -ne 0) {
             Write-Host "Installing core/windows-service"
             hab pkg install core/windows-service
-            hab pkg install core/hab-sup
             if ($LASTEXITCODE -ne 0) {
                 Write-Host "Failed to install 'core/windows-service'."
                 Exit 1
             }
+            Write-Host "Installing core/hab-sup"
+            hab pkg install core/hab-sup
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "Failed to install 'core/hab-sup'."
+                Exit 1
+            }
         }
 
-        $serviceStatus = Get-Service -Name "Habitat"
-        if ($serviceStatus.Status -ne "Running") {
-            Start-Service -Name "Habitat"
-            Write-Host "Habitat service started."
-        } else {
+        $serviceStatus = Get-Service -Name "Habitat" -ErrorAction SilentlyContinue
+        if ($serviceStatus -and $serviceStatus.Status -ne "Running") {
+            try {
+                Start-Service -Name "Habitat" -ErrorAction Stop
+                Write-Host "Habitat service started successfully."
+            } catch {
+                Write-Host "Failed to start Habitat service: $($_.Exception.Message)"
+                Exit 1
+            }
+        } elseif ($serviceStatus) {
             Write-Host "Habitat service is already running."
+        } else {
+            Write-Host "Habitat service not found."
+            Exit 1
         }
       EOH
       not_if <<-EOH
@@ -116,7 +169,10 @@ action_class do
             $false
         }
       EOH
+      live_stream true
+      returns [0]
     end
+    
   end
 
   def install_node_mgmt_full
@@ -141,9 +197,32 @@ action_class do
         $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
         (hab pkg list --all) -match "chef-platform/#{node['enroll']['nodeman_pkg']}"
       EOH
+      live_stream true
+      returns [0]
     end
 
     manage_nodeman_config_file
+
+    # powershell_script 'load_nodman_svc' do
+    #   code <<-EOH
+    #     $env:HAB_LICENSE = "accept"
+    #     $env:HAB_NONINTERACTIVE = "true"
+    #     $env:HAB_BLDR_URL = "#{new_resource.hab_builder_url}"
+    #     $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
+
+    #     hab svc load chef-platform/#{node['enroll']['nodeman_pkg']} --force
+    #     hab svc start chef-platform/#{node['enroll']['nodeman_pkg']}
+    #   EOH
+    #   action :run
+    #   not_if <<-EOH
+    #     $status = hab svc status chef-platform/#{node['enroll']['nodeman_pkg']}
+    #     if ($status -match 'up') {
+    #       return $true
+    #     } else {
+    #       return $false
+    #     }
+    #   EOH
+    # end
 
     powershell_script 'load_nodman_svc' do
       code <<-EOH
@@ -152,18 +231,41 @@ action_class do
         $env:HAB_BLDR_URL = "#{new_resource.hab_builder_url}"
         $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
 
+        Write-Host "Loading chef-platform/#{node['enroll']['nodeman_pkg']} service..."
         hab svc load chef-platform/#{node['enroll']['nodeman_pkg']} --force
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "Failed to load chef-platform/#{node['enroll']['nodeman_pkg']} service."
+            Exit $LASTEXITCODE
+        }
+
+        Write-Host "Starting chef-platform/#{node['enroll']['nodeman_pkg']} service..."
         hab svc start chef-platform/#{node['enroll']['nodeman_pkg']}
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "Failed to start chef-platform/#{node['enroll']['nodeman_pkg']} service."
+            Exit $LASTEXITCODE
+        }
+
+        Write-Host "Successfully loaded and started chef-platform/#{node['enroll']['nodeman_pkg']} service."
       EOH
       action :run
-      not_if <<-EOH
-        $status = hab svc status chef-platform/#{node['enroll']['nodeman_pkg']}
-        if ($status -match 'up') {
+      only_if <<-EOH
+        $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
+        try {
+          $status = hab svc status chef-platform/#{node['enroll']['nodeman_pkg']} 2>$null
+          if ($LASTEXITCODE -eq 0 -and $status -match 'up') {
+            Write-Host "Service chef-platform/#{node['enroll']['nodeman_pkg']} is already running."
+            return $false
+          } else {
+            Write-Host "Service chef-platform/#{node['enroll']['nodeman_pkg']} is not running."
+            return $true
+          }
+        } catch {
+          Write-Host "Service chef-platform/#{node['enroll']['nodeman_pkg']} is not loaded or not running."
           return $true
-        } else {
-          return $false
         }
       EOH
+      live_stream true
+      returns [0]
     end
   end
 end

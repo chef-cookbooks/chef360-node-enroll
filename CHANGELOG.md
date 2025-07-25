@@ -53,3 +53,6 @@ This file is used to list changes made in each version of the chef360-node-enrol
 ## 1.0.11
 - Added cleanup functionality to automatically delete temporary files and directories
 - Added logic to install Habitat package core/hab-sup explicitly in case it does not get installed with core/windows-service
+
+## 1.0.12
+- Added error handling and debug logs in Windows Enrollment.
