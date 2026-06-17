@@ -117,5 +117,6 @@ chef-platform-auth-cli user-account self create-token --body '{"expiration": "EX
 - Replace `ANY_TOKEN_NAME` with a meaningful token name for easy identification.
 - Replace `VALID_PROFILE_NAME` with the name of a valid profile configured on your workstation.
  
+# Copyright
 
-
+See [COPYRIGHT.md](./COPYRIGHT.md).
